@@ -1,14 +1,23 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import sys
-import json
 import time
 import csv
+import os
 
 from ethtoken.abi import EIP20_ABI
 from web3 import Web3, HTTPProvider
 
 from config import *
+
+def record_log(addr, amount, txhash):
+    LOG_DIR = os.path.join("Log")
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+
+    f = open('Log/already_transfer.txt','a',encoding='utf8')
+    f.writelines(addr+' '+str(amount/10**6)+' '+txhash+'\n')
+    f.close()
 
 
 class CsvReader(object):
@@ -24,6 +33,7 @@ class CsvReader(object):
                 result.append([item[0].strip(" "), item[1]])
         return result
 
+
 class ContributeTokens(object):
     def __init__(self, api_endpoint, contract_address, private_key, source_addr):
 
@@ -38,16 +48,23 @@ class ContributeTokens(object):
         # print(self.web3.personal.importRawKey(private_key,'123456'))
         # print("")
 
-    def wait_tx(self, txhash):
+    def wait_tx(self, addr, amount, txhash, times=1):
+        # 以太坊15秒出一个块，每次尝试获取收据，如果没有成功等待15秒
         try:
-            time.sleep(60)
+            print("Address: %s recharge %d, start check at %d times, txhash: %s " % (addr, amount, times, txhash))
+
             receipt = self.web3.eth.getTransactionReceipt(txhash)
             status = receipt['status']
             if status == 1:
-                print("Succss")
+                record_log(addr, amount, txhash)
+                print("Address:%s recharge %d Success, txhash: %s" % (addr, amount, txhash))
+            else:
+                print("Address:%s recharge %d Failed, txhash: %s" % (addr, amount, txhash))
         except Exception as e:
-            print(e)
-            self.wait_tx(txhash)
+            print("Address: %s recharge check failed, txHash: %s, error is %s start check again " % (addr, txhash, e))
+            time.sleep(15)
+            times += 1
+            self.wait_tx(addr, amount, txhash, times)
 
     def transfer(self, address, amount):
         """
@@ -88,7 +105,7 @@ class ContributeTokens(object):
             print("Enough Balance")
 
             txn_body = self.erc20.functions.transfer(address, int(actual_amount)).buildTransaction(
-                {'chainId': chainId, 'gas': gas_limit, 'gasPrice': gas_price, 'nonce': self.nonce})
+                {'gas': gas_limit, 'gasPrice': gas_price, 'nonce': self.nonce})
 
             print(txn_body)
             signed_txn_body = self.web3.eth.account.sign_transaction(txn_body, private_key=self.private_key)
@@ -98,7 +115,7 @@ class ContributeTokens(object):
             txhash = self.web3.toHex(txhash_bytes)
             print('txhash: ', txhash)
 
-            self.wait_tx(txhash)
+            self.wait_tx(address, actual_amount, txhash)
         else:
             print('代币余额不足！')
             raise Exception("Not Enough Balance for transfer!")
