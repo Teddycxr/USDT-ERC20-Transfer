@@ -10,12 +10,12 @@ from web3 import Web3, HTTPProvider
 
 from config import *
 
-def record_log(addr, amount, txhash):
+def record_log(addr, amount, txhash,file_name):
     LOG_DIR = os.path.join("Log")
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
 
-    f = open('Log/already_transfer.txt','a',encoding='utf8')
+    f = open('Log/'+file_name,'a',encoding='utf8')
     f.writelines(addr+' '+str(amount/10**6)+' '+txhash+'\n')
     f.close()
 
@@ -56,9 +56,10 @@ class ContributeTokens(object):
             receipt = self.web3.eth.getTransactionReceipt(txhash)
             status = receipt['status']
             if status == 1:
-                record_log(addr, amount, txhash)
+                record_log(addr, amount, txhash,'success_log.txt')
                 print("Address:%s recharge %d Success, txhash: %s" % (addr, amount, txhash))
             else:
+                record_log(addr, amount, receipt, 'failed_log.txt')
                 print("Address:%s recharge %d Failed, txhash: %s" % (addr, amount, txhash))
         except Exception as e:
             print("Address: %s recharge check failed, txHash: %s, error is %s start check again " % (addr, txhash, e))
