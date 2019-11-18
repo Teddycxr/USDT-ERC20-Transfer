@@ -97,7 +97,6 @@ class ContributeTokens(object):
         # 账户USDT 值
         balance = self.erc20.functions.balanceOf(self.source_addr).call()
 
-        # gas_limit = self.web3.eth.estimateGas({'to': address, 'from': self.source_addr})
         gas_price = self.web3.eth.gasPrice  # gas_price = web3.toWei('2', 'gwei')
         print('gas_price: ', gas_price)
         actual_amount = amount * pow(10, dec)
