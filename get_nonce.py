@@ -10,3 +10,8 @@ nonce = web3.eth.getTransactionCount(source_addr)
 print('Nonce:', nonce)
 gas_price = web3.eth.gasPrice
 print('Gas_price', gas_price)
+
+# 账户USDT 值
+# erc20 = web3.eth.contract(address=contract_address, abi=EIP20_ABI)
+# balance = erc20.functions.balanceOf(source_addr).call()
+# print('USDT余额：',balance)
