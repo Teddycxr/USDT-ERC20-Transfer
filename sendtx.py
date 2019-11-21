@@ -11,34 +11,34 @@ from config import api_endpoint
 web3 = Web3(HTTPProvider(api_endpoint))
 
 
-def record_log(txhash, file_name):
+def record_log(txhash, file, file_name):
     LOG_DIR = os.path.join("Log")
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
 
     f = open('Log/' + file_name, 'a', encoding='utf8')
-    f.writelines(txhash + '\n')
+    f.writelines(txhash + ' ' + file + '\n')
     f.close()
 
 
-def wait_tx(txhash, times=1):
+def wait_tx(txhash, file, times=1):
     # 以太坊15秒出一个块，每次尝试获取收据，如果没有成功等待15秒
     try:
-        print("start check at %d times, txhash: %s " % (times, txhash))
+        print("start check at %d times, txhash: %s, %s " % (times, txhash, file))
 
         receipt = web3.eth.getTransactionReceipt(txhash)
         status = receipt['status']
         if status == 1:
-            record_log(txhash, 'success_log.txt')
-            print("Success, txhash: %s" % (txhash))
+            record_log(txhash, file, 'success_log.txt')
+            print("Success, txhash: %s, file: %s" % (txhash, file))
         else:
-            record_log(receipt, 'failed_log.txt')
-            print("Failed, txhash: %s" % (txhash))
+            record_log(receipt, file, 'failed_log.txt')
+            print("Failed, txhash: %s, file: %s" % (txhash, file))
     except Exception as e:
         print("check failed, txHash: %s, error is %s start check again " % (txhash, e))
         time.sleep(15)
         times += 1
-        wait_tx(txhash, times)
+        wait_tx(txhash, file, times)
 
 
 def send_tx():
@@ -63,9 +63,9 @@ def send_tx():
 
         txhash_bytes = web3.eth.sendRawTransaction(data)
         txhash = web3.toHex(txhash_bytes)
-        print('txhash: ', txhash)
+        print('Txhash: ', txhash)
 
-        wait_tx(txhash)
+        wait_tx(txhash, i)
 
 
 if __name__ == '__main__':

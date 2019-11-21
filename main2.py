@@ -57,25 +57,28 @@ def create_tx(nonce, address, amount, file_name):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 5:
         print("Usage: ")
-        print("python3 main_old.py [CSV_FILE_PATH]")
+        print("python3 main_old.py [CSV_FILE_PATH] [gas_limit] [gas_price] [nonce]")
         print("Example: ")
-        print("python3 main_old.py test.csv")
+        print("python3 main_old.py test.csv 60000 1584000000 93")
         exit(0)
-
     else:
         print("Start Creating TXs.")
         batch_list = CsvReader(sys.argv[1]).parse()
 
+        gas_limit = int(sys.argv[2])
+        gas_price = int(sys.argv[3])
+        nonce = int(sys.argv[4])
+
         for i, tx in enumerate(batch_list):
             print("第{0}个地址: {1}, 金额： {2}".format(i + 1, tx[0], tx[1]))
             if i + 1 < 10:
-                file_name = 'tx00{0}.txt'.format(i + 1)
+                file_name = 'tx00{0}.txn'.format(i + 1)
             if i + 1 >= 10 and i + 1 < 100:
-                file_name = 'tx0{0}.txt'.format(i + 1)
+                file_name = 'tx0{0}.txn'.format(i + 1)
             if i + 1 >= 100:
-                file_name = 'tx{0}.txt'.format(i + 1)
+                file_name = 'tx{0}.txn'.format(i + 1)
 
             create_tx(nonce, tx[0], tx[1], file_name)
             nonce += 1
