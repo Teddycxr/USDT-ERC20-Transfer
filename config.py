@@ -1,4 +1,3 @@
-ahaha
 # 备用API地址
 api_endpoint='ETH节点URL'
 contract_address = "0xdac17f958d2ee523a2206206994597c13d831ec7"  # Token 合约地址
